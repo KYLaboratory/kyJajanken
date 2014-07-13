@@ -6,20 +6,17 @@
 #include<iostream>
 #include "handClip.h"
 
-
-//short値画像imageにおいて、x座標がleftとrightの間にある、画素値がindexの画素の最大の高さを求める
-//indexは1-255までを対象とする。その値が見つからない場合0を返す
-int calcMaxHeight(cv::Mat image, int left, int right, int index, int& top, int& bottom){
-	int maxHeight = 0;
-	top = image.rows;//最も下のy座標を初期値とする
+int getMaxHeight(cv::Mat image, int left, int right, int index, int& top, int& bottom){
+	int maxHeight=0;
+	top = image.rows;
 	bottom = 0;
-	for(int x = left; x < right; x++){
+	for(int x=left; x<right; x++){
 		int start=0;
 		int end =0;
-		bool isStarted = false;
-		for(int y = 0; y < image.rows; y++){
-			//上から順番に見ていく
-			unsigned char pixVal = image.data [y * image.step + 2 * image.channels() * x];//short画像を対象としているので2をかけている
+		bool isStarted=false;
+		for(int y=0; y<image.rows;y++){
+
+			unsigned char pixVal = image.data[y * image.step + 2*image.channels() *x];
 			if(pixVal == index){
 				if(!isStarted){
 					start = y;
@@ -31,18 +28,16 @@ int calcMaxHeight(cv::Mat image, int left, int right, int index, int& top, int& 
 				}
 			}
 		}
+		int height = end - start;
+		if(maxHeight < height){
+			maxHeight = height;
+		}
 
-		if(isStarted){//indexと等しいピクセルがあればmaxHeight,top,bottomを更新
-			int height = end - start +1;
-		    if(maxHeight < height){
-			    maxHeight = height;
-		    }
-			if(top > start){
-				top = start;
-			}
-			if(bottom < end){
-				bottom = end;
-			}
+		if(top > start && isStarted){
+			top = start;
+		}
+		if(bottom < end){
+			bottom = end;
 		}
 	}
 	return maxHeight;
@@ -119,20 +114,20 @@ bool getHandsInfo(cv::Mat binImage, HandInfo& leftInfo, HandInfo& rightInfo)
 			int top, left;
 			labelInfo->GetMin(left, top);
 			//領域の左から６０pixのところまでを借りの手の領域として、その高さを求める
-			int height = calcMaxHeight(labelImage, left, min(left+60,binImage.cols), i+1, top1, bottom1);
+			int height = getMaxHeight(labelImage, left, min(left+60,binImage.cols), i+1, top1, bottom1);
 			left1 = left;
 			right1=min((int)(left+height * 1.5), binImage.cols);//高さの２倍を手の横幅とする
-			calcMaxHeight(labelImage, left1, right1, i+1, top1, bottom1);//その領域で上下の最大値を求める
+			getMaxHeight(labelImage, left1, right1, i+1, top1, bottom1);//その領域で上下の最大値を求める
 			rightHands.push_back(HandInfo(left1, top1, right1, bottom1, false));
 		}
 		
 		else{//重心が中央より左にあれば左の人の手として処理
 			int right, bottom;
 			labelInfo->GetMax(right, bottom);
-			int height =calcMaxHeight(labelImage, max(right-60,0), right, i+1, top1,bottom1);
+			int height =getMaxHeight(labelImage, max(right-60,0), right, i+1, top1,bottom1);
 			left1 = max((int)(right - 1.5 * height), 0);
 			right1 = right;
-			calcMaxHeight(labelImage, left1, right1, i+1, top1, bottom1);
+			getMaxHeight(labelImage, left1, right1, i+1, top1, bottom1);
 			leftHands.push_back(HandInfo(left1,top1, right1, bottom1, false));
 		}
 	}

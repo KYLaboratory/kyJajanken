@@ -12,7 +12,6 @@ int getMaxHeight(cv::Mat image, int left, int right, int index, int& top, int& b
 
 cv::Scalar randomColor();
 
-//éËÇÃèÓïÒÇéùÇ¬ÉNÉâÉX
 class HandInfo{
 public:
 	cv::Rect handRect;

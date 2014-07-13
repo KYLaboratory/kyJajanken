@@ -90,9 +90,12 @@ void JajankenHunterApp::update()
     
     cv::Mat morDepthImage = depthImage.clone();
     cv::Mat element5(5,5,CV_8U,cv::Scalar(1));
-    cv::morphologyEx(depthImage, morDepthImage, MORPH_CLOSE, element5);
-    cv::morphologyEx(morDepthImage, morDepthImage, MORPH_OPEN, element5);
-    
+    int number_of_morpholgy = 2;
+	for(int i = 0; i < number_of_morpholgy; i++){
+		cv::morphologyEx(depthImage, morDepthImage, MORPH_CLOSE, element5);
+		cv::morphologyEx(morDepthImage, morDepthImage, MORPH_OPEN, element5);
+	}
+
     handInfo = handRectCutter->calcHandRect(depthImage);
     
     EHAND hand1 = eHAND_ERROR;
@@ -107,10 +110,12 @@ void JajankenHunterApp::update()
             
             trickEstimater->initialize();
             hand1 = trickEstimater->estimateTrick(morDepthImage, handInfo[0].handRect);
-            
+            console() << "left" << "\t" << hand1 << std::endl;
+
             trickEstimater->initialize();
             hand2 = trickEstimater->estimateTrick(morDepthImage, handInfo[1].handRect);
-            
+            console() << "right" << "\t" << hand2 << std::endl;
+
             cv::Rect rect1(handInfo[0].handRect);
             kasuyaEffector[0]->setPos(cv::Vec2f(rect1.x + rect1.width / 2, rect1.y + rect1.height / 2));
             

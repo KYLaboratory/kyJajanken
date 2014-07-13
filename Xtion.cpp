@@ -8,6 +8,8 @@
 
 #include "Xtion.h"
 
+#pragma comment(lib,"C:\\Program Files (x86)\\OpenNI2\\Lib\\OpenNI2.lib")
+
 Xtion::Xtion()
 {
     try
