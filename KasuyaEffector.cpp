@@ -46,7 +46,8 @@ void KasuyaEffector::update()
 {
     count++;
 	for (list<Particle>::iterator iter = particles.begin();
-         iter != particles.end();) {
+         iter != particles.end();)
+    {
         iter->update();
         if (iter->isDead())
             iter = particles.erase(iter);
@@ -54,8 +55,10 @@ void KasuyaEffector::update()
             iter++;
     }
     
-	if (isEmitting) {
-        for (int i = 0; i < 120*(1 + 0.5*sin(count*2*3.14/(30))); i++){
+	if (isEmitting)
+    {
+        for (int i = 0; i < 120 * (1 + 0.5 * sin(count * 2 * M_PI / 30)); i++)
+        {
 			particles.push_back(Particle(ci::fromOcv(startPos) + 50 * ci::Rand::randVec2f(), GCP, color));
 		}
     }
@@ -65,9 +68,9 @@ void KasuyaEffector::draw()
 {
 	if(isEmitting)
     {
-        for (list<Particle>::iterator iter = particles.begin();
-         iter != particles.end();
-         iter++)
-        iter->draw();
+        for (list<Particle>::iterator iter = particles.begin(); iter != particles.end(); iter++)
+        {
+            iter->draw();
+        }
     }
 }

@@ -10,7 +10,7 @@
 #define __JajankenHunter__Xtion__
 
 #include "OpenNI.h"
-#include "opencv2/opencv.hpp"
+#include "CinderOpenCV.h"
 
 class Xtion;
 typedef std::shared_ptr<Xtion> XtionRef;
@@ -24,8 +24,8 @@ public:
     static XtionRef create();
     
     void update();
-    cv::Mat getColorImage();
-    cv::Mat getDepthImage();
+    cv::Mat getColorImage() const;
+    cv::Mat getDepthImage() const;
     
 private:
     openni::Device device;

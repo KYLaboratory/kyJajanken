@@ -8,8 +8,6 @@
 
 #include "Xtion.h"
 
-#pragma comment(lib,"C:\\Program Files (x86)\\OpenNI2\\Lib\\OpenNI2.lib")
-
 Xtion::Xtion()
 {
     try
@@ -80,7 +78,7 @@ void Xtion::updateDepthImage()
         openni::VideoMode videoMode = depthFrame.getVideoMode();
         depthImage = cv::Mat::zeros(videoMode.getResolutionY(),videoMode.getResolutionX(),CV_8UC1);
         openni::DepthPixel* depth = (openni::DepthPixel*)depthFrame.getData();
-        const int maxDepth = 2000;
+        const int maxDepth = 3000;
         for (int i = 0; i < (depthFrame.getDataSize()/sizeof(openni::DepthPixel)); ++i)
         {
             if (depth[i] != 0 && depth[i] < maxDepth)
@@ -109,12 +107,12 @@ void Xtion::update()
     }
 }
 
-cv::Mat Xtion::getColorImage()
+cv::Mat Xtion::getColorImage() const
 {
     return colorImage.clone();
 }
 
-cv::Mat Xtion::getDepthImage()
+cv::Mat Xtion::getDepthImage() const
 {
     return depthImage.clone();
 }

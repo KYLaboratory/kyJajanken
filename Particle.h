@@ -1,8 +1,8 @@
 #pragma once
-#include "cinder/Vector.h"
-#include "cinder/app/AppNative.h"
-#include "cinder/gl/gl.h"
 #include <vector>
+#include "cinder/Rand.h"
+#include "cinder/BSpline.h"
+
 using namespace std;
 class Particle {
 public:

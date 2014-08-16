@@ -1,14 +1,15 @@
 #include "cinder/app/AppNative.h"
-#include "cinder/gl/gl.h"
-
-#include "CinderOpenCV.h"
+#include "cinder/gl/Texture.h"
 
 #include "Xtion.h"
-#include "AuraEffectGenerator.h"
-#include "TrickEffectGenerator.h"
-#include "HandRectCutter.h"
-#include "TrickEstimater.h"
+
+//#include "AuraEffectGenerator.h"
+//#include "TrickEffectGenerator.h"
+
+//#include "HandRectCutter.h"
+//#include "TrickEstimater.h"
 #include "KasuyaEffector.h"
+#include "JankenRecognizer.h"
 
 using namespace ci;
 using namespace ci::app;
@@ -22,8 +23,8 @@ class JajankenHunterApp : public AppNative
     XtionRef xtion;
     gl::TextureRef texture;
     
-    HandRectCutterRef handRectCutter;
-    TrickEstimaterRef trickEstimater;
+    //HandRectCutterRef handRectCutter;
+    //TrickEstimaterRef trickEstimater;
     
     //list<AuraEffectGeneratorRef> auraEffectGenerator;
     //list<TrickEffectGeneratorRef> trickEffectGenerator;
@@ -31,7 +32,7 @@ class JajankenHunterApp : public AppNative
     
     vector<HandInfo> handInfo;
     
-    //int handCount;
+    JankenRecognizer recognizer;
     
   public:
     void prepareSettings(Settings* settings);
@@ -49,8 +50,10 @@ void JajankenHunterApp::prepareSettings(Settings* settings)
 void JajankenHunterApp::setup()
 {
     xtion = Xtion::create();
-    handRectCutter = HandRectCutter::create();
-    trickEstimater = TrickEstimater::create();
+    //handRectCutter = HandRectCutter::create();
+    recognizer.initializeRecognizer();
+    
+    //trickEstimater = TrickEstimater::create();
     /*
     handCount = 2;
     for (int i = 0; i < handCount; i++)
@@ -68,7 +71,7 @@ void JajankenHunterApp::mouseDown( MouseEvent event )
     //auraEffectGenerator->setCenterCordinate(event.getPos());
 }
 
-string getTrickName(EHAND hand)
+string getTrickName(const EHAND& hand)
 {
     switch (hand) {
         case eHAND_ROCK:
@@ -82,52 +85,50 @@ string getTrickName(EHAND hand)
     }
 }
 
+cv::Mat closeAndOpen(const cv::Mat& inputImage)
+{
+    cv::Mat morImage = inputImage.clone();
+    const cv::Mat element5(5,5,CV_8U,cv::Scalar(1));
+    const int number_of_morpholgy = 2;
+	for(int i = 0; i < number_of_morpholgy; i++)
+    {
+		cv::morphologyEx(morImage, morImage, MORPH_CLOSE, element5);
+		cv::morphologyEx(morImage, morImage, MORPH_OPEN, element5);
+	}
+    
+    return morImage;
+}
+
 void JajankenHunterApp::update()
 {
     xtion->update();
     cv::Mat colorImage = xtion->getColorImage();
     cv::Mat depthImage = xtion->getDepthImage();
     
-    cv::Mat morDepthImage = depthImage.clone();
-    cv::Mat element5(5,5,CV_8U,cv::Scalar(1));
-    int number_of_morpholgy = 2;
-	for(int i = 0; i < number_of_morpholgy; i++){
-		cv::morphologyEx(depthImage, morDepthImage, MORPH_CLOSE, element5);
-		cv::morphologyEx(morDepthImage, morDepthImage, MORPH_OPEN, element5);
-	}
-
-    handInfo = handRectCutter->calcHandRect(depthImage);
+    cv::Mat morDepthImage = closeAndOpen(depthImage);
     
-    EHAND hand1 = eHAND_ERROR;
-	EHAND hand2 = eHAND_ERROR;
+    //handInfo = handRectCutter->calcHandRect(depthImage);
     
-    if(handInfo.size() > 0)
+    EHAND leftPersonResult = eHAND_ERROR;
+	EHAND rightPersonResult = eHAND_ERROR;
+	recognizer.recognizeHandByImage(morDepthImage, leftPersonResult, rightPersonResult);
+    
+    cv::Rect leftHandRect, rightHandRect;
+	recognizer.getHandRect(leftHandRect, rightHandRect);
+    
+	if (leftHandRect.width > 0 && leftHandRect.height > 0 && rightHandRect.width > 0 && rightHandRect.height > 0)
     {
-        if(handInfo[0].handRect.width > 0 && handInfo[0].handRect.height > 0 && handInfo[1].handRect.width > 0 && handInfo[1].handRect.height > 0)
-        {
-            cv::rectangle(morDepthImage, handInfo[0].handRect, randomColor(), 3);
-            cv::rectangle(morDepthImage, handInfo[1].handRect, randomColor(), 3);
-            
-            trickEstimater->initialize();
-            hand1 = trickEstimater->estimateTrick(morDepthImage, handInfo[0].handRect);
-            console() << "left" << "\t" << hand1 << std::endl;
-
-            trickEstimater->initialize();
-            hand2 = trickEstimater->estimateTrick(morDepthImage, handInfo[1].handRect);
-            console() << "right" << "\t" << hand2 << std::endl;
-
-            cv::Rect rect1(handInfo[0].handRect);
-            kasuyaEffector[0]->setPos(cv::Vec2f(rect1.x + rect1.width / 2, rect1.y + rect1.height / 2));
-            
-            cv::Rect rect2(handInfo[1].handRect);
-            kasuyaEffector[1]->setPos(cv::Vec2f(rect2.x + rect2.width / 2, rect2.y + rect2.height / 2));
-            
-            kasuyaEffector[0]->setTrick(hand1);
-            kasuyaEffector[1]->setTrick(hand2);
-            
-            kasuyaEffector[0]->start();
-            kasuyaEffector[1]->start();
-        }
+        cv::rectangle(colorImage, leftHandRect, cv::Scalar(255), 3);
+        cv::rectangle(colorImage, rightHandRect, cv::Scalar(255), 3);
+        
+        kasuyaEffector[0]->setPos(cv::Vec2f(leftHandRect.x + leftHandRect.width / 2, leftHandRect.y + leftHandRect.height / 2));
+        kasuyaEffector[1]->setPos(cv::Vec2f(rightHandRect.x + rightHandRect.width / 2, rightHandRect.y + rightHandRect.height / 2));
+        
+        kasuyaEffector[0]->setTrick(leftPersonResult);
+        kasuyaEffector[1]->setTrick(rightPersonResult);
+        
+        kasuyaEffector[0]->start();
+        kasuyaEffector[1]->start();
     }
     else
     {
@@ -138,8 +139,8 @@ void JajankenHunterApp::update()
     kasuyaEffector[0]->update();
     kasuyaEffector[1]->update();
     
-    cv::putText(morDepthImage, getTrickName(hand1), cv::Point(100, 50), CV_FONT_HERSHEY_PLAIN, 2, cv::Scalar(255,255,255));
-    cv::putText(morDepthImage, getTrickName(hand2), cv::Point(300, 50), CV_FONT_HERSHEY_PLAIN, 2, cv::Scalar(255,255,255));
+    cv::putText(colorImage, getTrickName(leftPersonResult), cv::Point(100, 50), CV_FONT_HERSHEY_PLAIN, 2, cv::Scalar(255,255,255));
+    cv::putText(colorImage, getTrickName(rightPersonResult), cv::Point(300, 50), CV_FONT_HERSHEY_PLAIN, 2, cv::Scalar(255,255,255));
     
     texture = gl::Texture::create(fromOcv(colorImage));
     

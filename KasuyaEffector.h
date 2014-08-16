@@ -11,7 +11,6 @@
 
 #include <iostream>
 #include "Particle.h"
-#include "cinder/Rand.h"
 #include "CinderOpenCV.h"
 
 using namespace cv;
