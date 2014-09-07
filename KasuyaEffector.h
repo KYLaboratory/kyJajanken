@@ -26,13 +26,13 @@ class KasuyaEffector
 	int count;
 	int GCP;
     cv::Vec2f beamPos;
-    ci::Color color;
+    ci::ColorA color;
     
 public:
-    KasuyaEffector(const cv::Vec2f initPos, const ci::Color initColor);
+    KasuyaEffector(const cv::Vec2f initPos, const ci::ColorA initColor);
     ~KasuyaEffector();
     
-    static KasuyaEffectorRef create(const cv::Vec2f initPos, const ci::Color initColor);
+    static KasuyaEffectorRef create(const cv::Vec2f initPos, const ci::ColorA initColor);
     
     void setTrick(const int trick);
     void setPos(const Vec2f pos);

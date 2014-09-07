@@ -2,7 +2,7 @@
 
 using namespace ci;
 
-Particle::Particle(Vec2i _location,int gcp, cinder::Color _color)
+Particle::Particle(Vec2i _location,int gcp, cinder::ColorA _color)
 {
 	GCP = gcp;
     
@@ -34,9 +34,11 @@ void Particle::update()
         case 2:
             direction += Vec2f(-1.0f, 0.0f);
             life -= 10;
+            break;
         case 3:
             direction += 0.007 * (Vec2f(100.0f, 100.0f) - location);
             life -= 25;
+            break;
         default:
             break;
     }
@@ -52,13 +54,13 @@ void Particle::draw()
     //  //gl::drawSolidCircle(location, radius);
     
     gl::lineWidth(6.0f);
-    gl::color(color);
+    gl::color(ColorA(1.0,1.0,1.0,1.0));
     if(pastPoints.size() > 0)
     {
         for(int i = 0; i < pastPoints.size() - 1; i++)
         {
+            gl::color(ColorA(color.r, color.g - 0.05f * i, color.b, color.a));
             gl::drawLine(pastPoints[i], pastPoints[i+1]);
-            gl::color(Color(color.r, color.g - 0.05f * i, color.b));
             gl::lineWidth(6.0f - 0.6f * i);
         }
     }

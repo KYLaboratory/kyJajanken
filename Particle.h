@@ -6,7 +6,7 @@
 using namespace std;
 class Particle {
 public:
-    Particle(ci::Vec2i location, int gcp, cinder::Color _color);
+    Particle(ci::Vec2i location, int gcp, cinder::ColorA _color);
     void update();
     void draw();
     bool isDead();
@@ -18,7 +18,7 @@ protected:
     float radius;
     int life;
 	int GCP;
-	cinder::Color color;
+	ci::ColorA color;
 
 	vector<ci::Vec2f> pastPoints;
 };

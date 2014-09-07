@@ -166,6 +166,7 @@ vector<int> HandRecognizer::lineScan(const Mat& img)
 				whiteNow = false;
 			}
 		}
+        result.push_back(whitecount);
 	}
     
 	return result;

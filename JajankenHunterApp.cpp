@@ -40,7 +40,6 @@ class JajankenHunterApp : public AppNative
     void prepareSettings(Settings* settings);
 	void setup();
     
-	void mouseDown(MouseEvent event);
     void keyDown(KeyEvent event);
 	
     void update();
@@ -58,19 +57,14 @@ void JajankenHunterApp::setup()
     
     recognizer.initializeRecognizer();
     
-    kasuyaEffector.push_back(KasuyaEffector::create(cv::Vec2f(100.0f,100.0f), Color(1.0f, 1.0f, 0.0f)));
-    kasuyaEffector.push_back(KasuyaEffector::create(cv::Vec2f(400.0f,100.0f), Color(0.0f, 1.0f, 1.0f)));
+    kasuyaEffector.push_back(KasuyaEffector::create(cv::Vec2f(100.0f,100.0f), ColorA(1.0f, 1.0f, 0.0f, 0.3f)));
+    kasuyaEffector.push_back(KasuyaEffector::create(cv::Vec2f(400.0f,100.0f), ColorA(0.0f, 1.0f, 1.0f, 0.3f)));
     
     judgementModeIsOn = false;
     tricksAreFixed = false;
     effectIsRunning = false;
     
     effectorStepCount = 0;
-}
-
-void JajankenHunterApp::mouseDown( MouseEvent event )
-{
-    
 }
 
 void JajankenHunterApp::keyDown(KeyEvent event)
@@ -198,12 +192,17 @@ void JajankenHunterApp::update()
 
 void JajankenHunterApp::draw()
 {
+    gl::disableAlphaBlending();
 	gl::clear( Color(0, 0, 0) );
+    
+    gl::setMatricesWindow(getWindowWidth(), getWindowHeight());
     
     if( texture )
     {
         gl::draw(texture);
     }
+    
+    gl::enableAlphaBlending();
     
     kasuyaEffector[0]->draw();
     kasuyaEffector[1]->draw();

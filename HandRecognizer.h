@@ -3,7 +3,6 @@
 #include "DP.h"
 #include "Janken.h"
 #include "CinderOpenCV.h"
-#include "cinder/ImageIo.h"
 
 using namespace cv;
 

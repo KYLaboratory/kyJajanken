@@ -8,7 +8,7 @@
 
 #include "KasuyaEffector.h"
 
-KasuyaEffector::KasuyaEffector(const Vec2f initPos, const ci::Color initColor)
+KasuyaEffector::KasuyaEffector(const Vec2f initPos, const ci::ColorA initColor)
 :beamPos(initPos), color(initColor), count(0), GCP(1), isEmitting(false)
 {
 }
@@ -17,7 +17,7 @@ KasuyaEffector::~KasuyaEffector()
 {
 }
 
-KasuyaEffectorRef KasuyaEffector::create(const Vec2f initPos, const ci::Color initColor)
+KasuyaEffectorRef KasuyaEffector::create(const Vec2f initPos, const ci::ColorA initColor)
 {
     return KasuyaEffectorRef(new KasuyaEffector(initPos, initColor));
 }

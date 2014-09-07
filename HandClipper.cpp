@@ -88,8 +88,6 @@ Mat HandClipper::rotateEx(const Mat& src, const double angle, const cv::Rect& re
     return dst;
 }
 
-#include <iostream>
-
 int HandClipper::calcMaxHeightEx(const Mat& image, int left, int right, int index, int& top, int& bottom) const
 {
     const int depth = image.depth() == CV_16S ? 2 : 1;
