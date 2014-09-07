@@ -4,6 +4,8 @@
 #include <math.h>
 
 #include "HandInfo.h"
+#include "CinderOpenCV.h"
+#include "cinder/ImageIo.h"
 
 using namespace cv;
 

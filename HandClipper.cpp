@@ -88,10 +88,13 @@ Mat HandClipper::rotateEx(const Mat& src, const double angle, const cv::Rect& re
     return dst;
 }
 
+#include <iostream>
+
 int HandClipper::calcMaxHeightEx(const Mat& image, int left, int right, int index, int& top, int& bottom) const
 {
     const int depth = image.depth() == CV_16S ? 2 : 1;
-	Mat subImage(cv::Size(right - left, image.rows), CV_8UC1, Scalar(0));
+	const Mat subImage(cv::Size(right - left, image.rows), CV_8UC1, Scalar(0));
+    
 	for(int x = left; x < right; x++)
     {
 		for(int y = 0; y < image.rows; y++)
@@ -105,13 +108,23 @@ int HandClipper::calcMaxHeightEx(const Mat& image, int left, int right, int inde
 	}
     
 	Mat labelImage(subImage.size(), CV_16SC1);
+    
     // ラベリングを実施 ２値化した画像に対して実行する。
     LabelingBS  labeling;
     labeling.Exec(subImage.data, (short *)labelImage.data, subImage.cols, subImage.rows, true, 0);
-    Labeling<unsigned char,short>::RegionInfo *labelInfo = labeling.GetResultRegionInfo(0);
     
-    labelInfo->GetMax(right, bottom);
-    labelInfo->GetMin(left, top);
+    if(labeling.GetNumOfResultRegions() > 0)
+    {
+        Labeling<unsigned char,short>::RegionInfo *labelInfo = labeling.GetResultRegionInfo(0);
+    
+        labelInfo->GetMax(right, bottom);
+        labelInfo->GetMin(left, top);
+    }
+    else
+    {
+        top = 0;
+        bottom = image.rows - 1;
+    }
     
 	return bottom - top;
 }
@@ -300,7 +313,7 @@ Mat HandClipper::clipHand(const Mat& binimg, const HandInfo& hand) const
 {
 	const Vec4f line = calcHandAngle(binimg, hand.handRect);
 	const double angle =  atan2(line[1],line[0])* 180.0 / 3.1415;
-	const Mat imgR = rotateEx(binimg, angle, hand.handRect);
+    const Mat imgR = rotateEx(binimg, angle, hand.handRect);
 	if(!hand.isLeftPersonHand())
     {
 		flip(imgR, imgR, 1);//右の人の手の場合反転させる
