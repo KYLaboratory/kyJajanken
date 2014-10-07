@@ -2,11 +2,12 @@
 #include <vector>
 #include "cinder/Rand.h"
 #include "cinder/BSpline.h"
+#include "Janken.h"
 
 using namespace std;
 class Particle {
 public:
-    Particle(ci::Vec2i location, int gcp, cinder::ColorA _color);
+    Particle(ci::Vec2i location, EHAND gcp, cinder::Color _color);
     void update();
     void draw();
     bool isDead();
@@ -17,8 +18,8 @@ protected:
     float velocity;
     float radius;
     int life;
-	int GCP;
-	ci::ColorA color;
+	EHAND GCP;
+	cinder::Color color;
 
 	vector<ci::Vec2f> pastPoints;
 };

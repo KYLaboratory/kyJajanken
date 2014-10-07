@@ -50,7 +50,7 @@ EHAND HandRecognizer::recognize(const Mat& image)
 
 void HandRecognizer::addSample(const string& fileName, const EHAND& trick)
 {
-    Mat img = ci::toOcv(ci::loadImage(fileName));
+    Mat img = ci::toOcv(ci::loadImage(fileName), CV_8U);
 	//Mat img = imread(fileName,0);
 	Mat resized;
 	resize(img, resized, cv::Size(recognizeWidth, recognizeHeight));
@@ -166,8 +166,7 @@ vector<int> HandRecognizer::lineScan(const Mat& img)
 				whiteNow = false;
 			}
 		}
-        result.push_back(whitecount);
+		result.push_back(whitecount);
 	}
-    
 	return result;
 }

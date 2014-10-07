@@ -12,6 +12,7 @@
 #include <iostream>
 #include "Particle.h"
 #include "CinderOpenCV.h"
+#include "Janken.h"
 
 using namespace cv;
 
@@ -24,17 +25,17 @@ class KasuyaEffector
     bool isEmitting;
     cv::Vec2i startPos;
 	int count;
-	int GCP;
+	EHAND GCP;
     cv::Vec2f beamPos;
-    ci::ColorA color;
+    ci::Color color;
     
 public:
-    KasuyaEffector(const cv::Vec2f initPos, const ci::ColorA initColor);
+    KasuyaEffector(const cv::Vec2f initPos, const ci::Color initColor);
     ~KasuyaEffector();
     
-    static KasuyaEffectorRef create(const cv::Vec2f initPos, const ci::ColorA initColor);
+    static KasuyaEffectorRef create(const cv::Vec2f initPos, const ci::Color initColor);
     
-    void setTrick(const int trick);
+    void setTrick(const EHAND trick);
     void setPos(const Vec2f pos);
     void start();
     void stop();

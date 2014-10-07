@@ -5,6 +5,7 @@
 
 #include "KasuyaEffector.h"
 #include "JankenRecognizer.h"
+#include "AuraGenerator.h"
 
 using namespace ci;
 using namespace ci::app;
@@ -17,10 +18,12 @@ class JajankenHunterApp : public AppNative
 {
     XtionRef xtion;
     gl::TextureRef texture;
-    
+    gl::TextureRef auraTexture;
     vector<KasuyaEffectorRef> kasuyaEffector;
     
     JankenRecognizer recognizer;
+    
+    AuraGenerator auraGenerator;
     
     bool judgementModeIsOn;
     bool tricksAreFixed;
@@ -40,6 +43,7 @@ class JajankenHunterApp : public AppNative
     void prepareSettings(Settings* settings);
 	void setup();
     
+	void mouseDown(MouseEvent event);
     void keyDown(KeyEvent event);
 	
     void update();
@@ -57,14 +61,19 @@ void JajankenHunterApp::setup()
     
     recognizer.initializeRecognizer();
     
-    kasuyaEffector.push_back(KasuyaEffector::create(cv::Vec2f(100.0f,100.0f), ColorA(1.0f, 1.0f, 0.0f, 0.3f)));
-    kasuyaEffector.push_back(KasuyaEffector::create(cv::Vec2f(400.0f,100.0f), ColorA(0.0f, 1.0f, 1.0f, 0.3f)));
+    kasuyaEffector.push_back(KasuyaEffector::create(cv::Vec2f(100.0f,100.0f), Color(1.0f, 1.0f, 0.0f)));
+    kasuyaEffector.push_back(KasuyaEffector::create(cv::Vec2f(400.0f,100.0f), Color(0.0f, 1.0f, 1.0f)));
     
     judgementModeIsOn = false;
     tricksAreFixed = false;
     effectIsRunning = false;
     
     effectorStepCount = 0;
+}
+
+void JajankenHunterApp::mouseDown( MouseEvent event )
+{
+    
 }
 
 void JajankenHunterApp::keyDown(KeyEvent event)
@@ -137,13 +146,11 @@ void JajankenHunterApp::update()
 {
     xtion->update();
     cv::Mat colorImage = xtion->getColorImage();
+    cv::Mat depthImage = xtion->getDepthImage();
+    cv::Mat morDepthImage = closeAndOpen(depthImage);
     
     if(judgementModeIsOn)
     {
-        cv::Mat depthImage = xtion->getDepthImage();
-        
-        cv::Mat morDepthImage = closeAndOpen(depthImage);
-        
         EHAND leftPersonResult = eHAND_ERROR;
         EHAND rightPersonResult = eHAND_ERROR;
         recognizer.recognizeHandByImage(morDepthImage, leftPersonResult, rightPersonResult);
@@ -187,25 +194,31 @@ void JajankenHunterApp::update()
         cv::putText(colorImage, getTrickName(rightPersonResult), cv::Point(300, 50), CV_FONT_HERSHEY_PLAIN, 2, cv::Scalar(255,255,255));
     }
     
+    cv::Mat resultImage = auraGenerator.generateAura(colorImage, morDepthImage);
+    
     texture = gl::Texture::create(fromOcv(colorImage));
+    
+    auraTexture = gl::Texture::create(fromOcv(resultImage));
 }
 
 void JajankenHunterApp::draw()
 {
-    gl::disableAlphaBlending();
-	gl::clear( Color(0, 0, 0) );
-    
-    gl::setMatricesWindow(getWindowWidth(), getWindowHeight());
+	gl::clear( ColorA(0, 0, 0, 0) );
+    gl::enableAlphaBlending();
     
     if( texture )
     {
         gl::draw(texture);
     }
     
-    gl::enableAlphaBlending();
+    if (auraTexture) {
+        gl::draw(auraTexture);
+    }
     
     kasuyaEffector[0]->draw();
     kasuyaEffector[1]->draw();
+    
+    gl::disableAlphaBlending();
 }
 
 CINDER_APP_NATIVE( JajankenHunterApp, RendererGl )

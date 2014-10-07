@@ -13,45 +13,43 @@ HandClipper::~HandClipper(void)
 void HandClipper::clipHands(const Mat& image, Mat& leftPersonImage, Mat& rightPersonImage)
 {
 	Mat binimg;
-	threshold(image, binimg, 200, 255, THRESH_BINARY);
+	threshold(image, binimg, 180, 255, THRESH_BINARY);
     
 	HandInfo leftHand;
 	HandInfo rightHand;
 	Mat labelImage;
-	getHandsInfo(binimg, leftHand, rightHand, labelImage);
-	
-	if(leftHand.isFound)
-    {
-        Mat labelarea;
-		compare(labelImage, leftHand.index, labelarea, CV_CMP_EQ);
+
+	if(getHandsInfo(binimg, leftHand, rightHand, labelImage)){
+		if(leftHand.isFound){
+			Mat labelarea;
+			compare(labelImage, leftHand.index, labelarea, CV_CMP_EQ);
+		
+	        Mat clipImage(binimg.size(), CV_8UC1, Scalar(0));
+		    Mat color(binimg.size(), CV_8UC1, Scalar(255));
+			color.copyTo(clipImage, labelarea);
         
-        Mat clipImage(binimg.size(), CV_8UC1, Scalar(0));
-        Mat color(binimg.size(), CV_8UC1, Scalar(255));
-        color.copyTo(clipImage, labelarea);
+			//Vec4f line = calcHandAngle(clipImage, leftHand.handRect);
+			//double angle =  atan2(line[1],line[0])* 180.0 / 3.1415; //??
         
-		//Vec4f line = calcHandAngle(clipImage, leftHand.handRect);
-		//double angle =  atan2(line[1],line[0])* 180.0 / 3.1415; //??
+			leftPersonImage = clipHand(clipImage, leftHand);
+			//clipImage = Scalar(0);
+		}
+		if(rightHand.isFound){
+			Mat labelarea;
+			compare(labelImage, rightHand.index, labelarea, CV_CMP_EQ);
         
-		leftPersonImage = clipHand(clipImage, leftHand);
-		//clipImage = Scalar(0);
+			Mat clipImage(binimg.size(), CV_8UC1, Scalar(0));
+			Mat color(binimg.size(), CV_8UC1, Scalar(255));
+			color.copyTo(clipImage, labelarea);
+        
+			Vec4f line = calcHandAngle(binimg, rightHand.handRect);
+			double angle =  atan2(line[1],line[0])* 180.0 / 3.1415;
+			Mat outimgR2 = rotateEx(clipImage, angle, rightHand.handRect);//??
+        
+			rightPersonImage = clipHand(clipImage, rightHand);
+		}
 	}
-    
-	if(rightHand.isFound)
-    {
-        Mat labelarea;
-		compare(labelImage, rightHand.index, labelarea, CV_CMP_EQ);
-        
-        Mat clipImage(binimg.size(), CV_8UC1, Scalar(0));
-        Mat color(binimg.size(), CV_8UC1, Scalar(255));
-        color.copyTo(clipImage, labelarea);
-        
-		Vec4f line = calcHandAngle(binimg, rightHand.handRect);
-		double angle =  atan2(line[1],line[0])* 180.0 / 3.1415;
-		Mat outimgR2 = rotateEx(clipImage, angle, rightHand.handRect);//??
-        
-		rightPersonImage = clipHand(clipImage, rightHand);
-	}
-    
+
 	leftHandInfo = leftHand;
 	rightHandInfo = rightHand;
 }
@@ -255,26 +253,29 @@ bool HandClipper::getHandsInfo(const Mat& binImage, HandInfo& leftInfo, HandInfo
 	}
     
 	bool isLeftHandsExist = false;
-	//¶èŒó•â‚ª•¡”‚ ‚éê‡‚Ì‘I•
+	//¶èŒó•â‚ª•¡”‚ ‚éê‡‚Ì‘IE	
 	if(leftHands.size() > 0)
     {
 		leftInfo = leftHands[0];
-		isLeftHandsExist = true;
+		leftInfo.isFound = true;
+		isLeftHandsExist =true;
 		//‚æ‚è‰E’[‚ª‰E‚É‚ ‚éè‚ğc‚·
 		for(int i = 1; i < leftHands.size(); i++)
         {
 			if(leftHands[i].getRight() > leftInfo.getRight())
             {
 				leftInfo = leftHands[i];
+				leftInfo.isFound = true;
 			}
 		}
 	}
 	
     bool isRightHandsExist = false;
-	//‰EèŒó•â‚ª•¡”‚ ‚éê‡‚Ì‘I•
+	//‰EèŒó•â‚ª•¡”‚ ‚éê‡‚Ì‘IE	
 	if(rightHands.size() > 0)
     {
 		rightInfo = rightHands[0];
+		rightInfo.isFound = true;
 		isRightHandsExist = true;
 		//‚æ‚è¶’[‚ª¶‚É‚ ‚éè‚ğc‚·
 		for(int i = 1; i < rightHands.size(); i++)
@@ -282,6 +283,7 @@ bool HandClipper::getHandsInfo(const Mat& binImage, HandInfo& leftInfo, HandInfo
 			if(rightHands[i].getLeft() < rightInfo.getLeft())
             {
 				rightInfo = rightHands[i];
+				rightInfo.isFound = true;
 			}
 		}
 	}

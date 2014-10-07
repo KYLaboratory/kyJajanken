@@ -8,8 +8,8 @@
 
 #include "KasuyaEffector.h"
 
-KasuyaEffector::KasuyaEffector(const Vec2f initPos, const ci::ColorA initColor)
-:beamPos(initPos), color(initColor), count(0), GCP(1), isEmitting(false)
+KasuyaEffector::KasuyaEffector(const Vec2f initPos, const ci::Color initColor)
+:beamPos(initPos), color(initColor), count(0), GCP(eHAND_ERROR), isEmitting(false)
 {
 }
 
@@ -17,12 +17,12 @@ KasuyaEffector::~KasuyaEffector()
 {
 }
 
-KasuyaEffectorRef KasuyaEffector::create(const Vec2f initPos, const ci::ColorA initColor)
+KasuyaEffectorRef KasuyaEffector::create(const Vec2f initPos, const ci::Color initColor)
 {
     return KasuyaEffectorRef(new KasuyaEffector(initPos, initColor));
 }
 
-void KasuyaEffector::setTrick(const int trick)
+void KasuyaEffector::setTrick(const EHAND trick)
 {
     GCP = trick;
 }

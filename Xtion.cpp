@@ -14,18 +14,18 @@ Xtion::Xtion()
     {
         openni::OpenNI::initialize();
         
-        
+        /*
         if(device.open(openni::ANY_DEVICE) != openni::STATUS_OK){
             throw std::exception();
         }
+        */
         
-        /*
         // for test using ONI file
         if(device.open("../../../resources/kinect.oni") != openni::STATUS_OK)
         {
             throw std::exception();
         }
-        */
+        
         colorStream.create(device, openni::SensorType::SENSOR_COLOR);
         depthStream.create(device, openni::SensorType::SENSOR_DEPTH);
         
@@ -106,8 +106,8 @@ void Xtion::update()
     {
         case 0:
             updateColorImage();
-            break;
-        case 1:
+        //    break;
+        //case 1:
             updateDepthImage();
             break;
         default:
